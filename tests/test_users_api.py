@@ -43,6 +43,7 @@ def test_put_user_creates_user(client, test_db):
     assert 'bbeggins' == user_response.data['username']
 
 # @pytest.mark.skip('Failing because of zscaler')
+@pytest.mark.liveserver
 def test_get_user_from_live_server_returns_user(live_server, test_db):
     url = '{}/api/users/1/'.format(live_server.url)
     response = requests.get(url)

@@ -1,6 +1,13 @@
 import pytest
 from django.core import management
 
+def pytest_addoption(parser):
+    parser.addoption("--with-liveserver", action="store_true",
+                     help="run the tests marked with @liveserver otherwise skip tests")
+
+def pytest_runtest_setup(item):
+    if 'liveserver' in item.keywords and not item.config.getoption("--with-liveserver"):
+        pytest.skip("need --with-liveserver option to run this test")
 
 @pytest.fixture
 def empty_db(settings, db, tmpdir):
