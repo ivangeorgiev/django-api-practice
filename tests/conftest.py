@@ -1,18 +1,23 @@
 import pytest
 from django.core import management
-from rapidapipractice import settings
-
-settings.DATABASES['default'] = {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': ':memory:',
-    }
 
 
 @pytest.fixture
-def test_db():
+def empty_db(settings, db):
     """
-    Initialize the test database. Note that this fixture should be
-    used with test-cases marked with @pytest.mark.django_db
+    Initialize empty database.
+    """
+    settings.DATABASES['default'] = {
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': ':memory:',
+    }
+    yield db
+
+
+@pytest.fixture
+def test_db(empty_db):
+    """
+    Initialize the fixture/test database with records.
     """
     fixture_data = {
         'users': [
