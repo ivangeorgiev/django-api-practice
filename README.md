@@ -20,6 +20,56 @@ $ python manage.py runserver
 
 Open your browser and navigate to http://localhost:8000/api/.
 
+## Run Unit Tests
+
+```bash
+$ pytest -vv --cov=rapidapipractice --cov=api --cov-report=term
+```
+
+
+
+```
+(.venv) C:\Sandbox\Learn\Python\Django\django-api-practice>pytest -vv --cov=rapidapipractice --cov=api --cov-report=term
+================================================================== test session starts ===================================================================
+platform win32 -- Python 3.7.6rc1, pytest-5.4.3, py-1.9.0, pluggy-0.13.1 -- c:\sandbox\learn\python\django\django-api-practice\.venv\scripts\python.exe    
+cachedir: .pytest_cache
+django: settings: rapidapipractice.settings (from ini)
+rootdir: C:\Sandbox\Learn\Python\Django\django-api-practice, inifile: pytest.ini
+plugins: cov-2.10.0, django-3.9.0
+collected 3 items
+
+
+tests/test_smoke.py::test_get_user PASSED                                [ 33%]
+tests/test_smoke.py::test_create_user PASSED                             [ 66%]
+tests/test_smoke.py::test_can_read_api_root PASSED                       [100%] 
+
+--------- coverage: platform win32, python 3.7.6-candidate-1 ---------
+Name                           Stmts   Miss  Cover
+--------------------------------------------------
+api\__init__.py                    0      0   100%
+api\admin.py                       1      0   100%
+api\apps.py                        3      3     0%
+api\migrations\__init__.py         0      0   100%
+api\models.py                      1      0   100%
+api\serializers.py                10      0   100%
+api\tests.py                       1      1     0%
+api\views.py                      10      0   100%
+rapidapipractice\__init__.py       0      0   100%
+rapidapipractice\asgi.py           4      4     0%
+rapidapipractice\settings.py      19      0   100%
+rapidapipractice\urls.py           9      0   100%
+rapidapipractice\wsgi.py           4      4     0%
+--------------------------------------------------
+TOTAL                             62     12    81%
+
+
+============================== 3 passed in 1.23s ============================== 
+```
+
+
+
+
+
 # Create the project (Notes)
 
 ## Setup Django project
