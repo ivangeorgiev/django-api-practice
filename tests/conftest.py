@@ -3,14 +3,14 @@ from django.core import management
 
 
 @pytest.fixture
-def empty_db(settings, db):
+def empty_db(settings, db, tmpdir):
     """
     Initialize empty database.
     """
-    settings.DATABASES['default'] = {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': ':memory:',
-    }
+    # settings.DATABASES['default'] = {
+    #     'ENGINE': 'django.db.backends.sqlite3',
+    #     'NAME': tmpdir + '/db.sqlite3' # ':memory:',
+    # }
     yield db
 
 

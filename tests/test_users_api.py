@@ -42,11 +42,11 @@ def test_put_user_creates_user(client, test_db):
     assert user_response.status_code == 200
     assert 'bbeggins' == user_response.data['username']
 
-@pytest.mark.skip('Failing because of zscaler')
+# @pytest.mark.skip('Failing because of zscaler')
 def test_get_user_from_live_server_returns_user(live_server, test_db):
     url = '{}/api/users/1/'.format(live_server.url)
     response = requests.get(url)
     print(response.text)
     assert response.status_code == 200
-    assert response.json == {}
-    pass
+    actual = response.json()
+    assert 'ivang' == actual['username']
