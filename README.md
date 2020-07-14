@@ -36,12 +36,14 @@ cachedir: .pytest_cache
 django: settings: rapidapipractice.settings (from ini)
 rootdir: C:\Sandbox\Learn\Python\Django\django-api-practice, inifile: pytest.ini
 plugins: cov-2.10.0, django-3.9.0
-collected 3 items
+collected 6 items
 
-
-tests/test_smoke.py::test_get_user PASSED                                [ 33%]
-tests/test_smoke.py::test_create_user PASSED                             [ 66%]
-tests/test_smoke.py::test_can_read_api_root PASSED                       [100%] 
+tests/test_users_api.py::test_get_usrers_on_empty_db_returns_empty_list PASSED [ 16%]
+tests/test_users_api.py::test_get_usrers_returns_empty_list_of_users PASSED [ 33%]
+tests/test_users_api.py::test_read_existing_user_returns_user_info PASSED [ 50%]
+tests/test_users_api.py::test_read_not_existing_user_returns_404 PASSED  [ 66%]
+tests/test_users_api.py::test_put_user_creates_user PASSED               [ 83%]
+tests/test_users_api.py::test_can_read_api_root PASSED                   [100%]
 
 --------- coverage: platform win32, python 3.7.6-candidate-1 ---------
 Name                           Stmts   Miss  Cover
@@ -63,7 +65,7 @@ rapidapipractice\wsgi.py           4      4     0%
 TOTAL                             62     12    81%
 
 
-============================== 3 passed in 1.23s ============================== 
+============================== 6 passed in 1.09s ============================== 
 ```
 
 
@@ -212,10 +214,205 @@ $ python manage.py runserver
 
 
 
-## Testing
+## Unit Testing
+
+To test our project we are going to use in-memory SQLite database with a user created.
+
+### Setting Up
+
+We are going to use pytest with pytest-django plugin:
 
 ```bash
 $ pip install pytest pytest-django pytest-cov
+```
+
+### pytest.ini
+
+Create `pytest.ini`  in the root of the application
+
+```ini
+[pytest]
+DJANGO_SETTINGS_MODULE = rapidapipractice.settings
+```
+
+### Fixtures
+
+Number of useful fixtures are provided by `pytest-django`.
+
+#### In-Memory SQLite
+
+We define all fixtures in `conftest.py`.  In this module we also update Django settings to use in-memory SQLite database:
+
+```python
+from rapidapipractice import settings
+
+settings.DATABASES['default'] = {
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': ':memory:',
+    }
+```
+
+
+
+#### Initialize test database (`test_db` fixture)
+
+We will create a `test_db` fixture which initializes the database and creates a user (`username=ivang;email=ivang@mail.com). We are going to use this user later in tests.
+
+Add following to `conftest.py`
+
+```python
+import pytest
+from django.core import management
+
+@pytest.fixture
+def test_db():
+    """
+    Initialize the test database. Note that this fixture should be
+    used with test-cases marked with @pytest.mark.django_db
+    """
+    fixture_data = {
+        'users': [
+            { 'username': 'ivang', 'email': 'ivan.georgiev@mail.com'}
+        ]
+    }
+    management.call_command('makemigrations', verbosity=0, interactive=False)
+    management.call_command('migrate', verbosity=0, interactive=False)
+    for user_info in fixture_data['users']:
+        management.call_command('createsuperuser', verbosity=0, interactive=False,
+                **user_info)
+    yield fixture_data
+```
+
+The fixture returns fixture data so that it could be used in test cases.
+
+#### Final `conftest.py`
+
+```python 
+import pytest
+from django.core import management
+from rapidapipractice import settings
+
+settings.DATABASES['default'] = {
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': ':memory:',
+    }
+
+
+@pytest.fixture
+def test_db():
+    """
+    Initialize the test database. Note that this fixture should be
+    used with test-cases marked with @pytest.mark.django_db
+    """
+    fixture_data = {
+        'users': [
+            { 'username': 'ivang', 'email': 'ivan.georgiev@mail.com'}
+        ]
+    }
+    management.call_command('makemigrations', verbosity=0, interactive=False)
+    management.call_command('migrate', verbosity=0, interactive=False)
+    for user_info in fixture_data['users']:
+        management.call_command('createsuperuser', verbosity=0, interactive=False,
+                **user_info)
+    yield fixture_data
+```
+
+### Executing tests
+
+```bash
+$ pytest -vv --cov=rapidapipractice --cov=api --cov-report=term
+```
+
+
+
+### Test Cases for Users API
+
+We will place our Users API test cases in `tests/test_users_api.py`
+
+#### First Test Case - Smoke Test
+
+We will start with reading the API root url and confirming it returns OK http response.
+
+Add following to `tests/test_users_api.py`
+
+```python
+def test_can_read_api_root(client):
+    response = client.get('/api/')
+    assert response.status_code == 200
+```
+
+The `client` fixture is provided by `pytest-django` plugin.
+
+#### Test Case: Read existing user
+
+```python
+import pytest
+
+@pytest.mark.django_db
+def test_read_existing_user_returns_user_info(client, test_db):
+    response = client.get('/api/users/1/')
+    assert response.status_code == 200
+    assert response.data['username'] == 'ivang'
+    assert response.data['email'] == 'ivan.georgiev@mail.com'
+```
+
+`import pytest` is necessary for the `django_db` mark. The `django_db` mark is provided by the `pytest-django` plugin. It causes the Django database to be initialized before calling the test case.
+
+#### Test Case: Read non-existent user
+
+Add following to `tests/test_users_api.py`
+
+```python
+@pytest.mark.django_db
+def test_read_not_existing_user_returns_404(client, test_db):
+    response = client.get('/api/users/101/')
+    assert response.status_code == 404
+```
+
+#### Test Case: Get users returns empty list on empty database
+
+```python
+@pytest.mark.django_db
+def test_get_usrers_on_empty_db_returns_empty_list(client):
+    response = client.get('/api/users/')
+    assert response.status_code == 200
+    assert isinstance(response.data['results'], list)
+    assert [] == response.data['results']
+```
+
+
+
+#### Test Case: Get users returns a list of users
+
+```python
+@pytest.mark.django_db
+def test_get_usrers_returns_empty_list_of_users(client, test_db):
+    response = client.get('/api/users/')
+    assert response.status_code == 200
+    assert isinstance(response.data['results'], list)
+    assert 1 == len(response.data['results'])
+    actual = response.data['results'][0]
+    assert 'ivang' == actual['username']
+```
+
+
+
+#### Test Case: Put user creates a user
+
+```python
+@pytest.mark.django_db
+def test_put_user_creates_user(client, test_db):
+    data = {
+        'username':'bbeggins',
+        'email': 'bbeggins@domain.com',
+    }
+    response = client.post('/api/users/', data=data)
+    print(response.data)
+    assert response.status_code == 201
+    assert '/api/users/2/' in response.data['url']
+    user_response = client.get('/api/users/2/')
+    assert user_response.status_code == 200
+    assert 'bbeggins' == user_response.data['username']
 ```
 
 
