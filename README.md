@@ -275,8 +275,6 @@ def test_db():
             { 'username': 'ivang', 'email': 'ivan.georgiev@mail.com'}
         ]
     }
-    management.call_command('makemigrations', verbosity=0, interactive=False)
-    management.call_command('migrate', verbosity=0, interactive=False)
     for user_info in fixture_data['users']:
         management.call_command('createsuperuser', verbosity=0, interactive=False,
                 **user_info)
@@ -356,7 +354,7 @@ def test_read_existing_user_returns_user_info(client, test_db):
     assert response.data['email'] == 'ivan.georgiev@mail.com'
 ```
 
-`import pytest` is necessary for the `django_db` mark. The `django_db` mark is provided by the `pytest-django` plugin. It causes the Django database to be initialized before calling the test case.
+`import pytest` is necessary for the `django_db` mark. The `django_db` mark is provided by the `pytest-django` plugin. It causes the Django database to be initialized and migrated before calling the test case. For more info refer to [`pytest-django` documentation](https://pytest-django.readthedocs.io/en/latest/helpers.html#pytest-mark-django-db-request-database-access).
 
 #### Test Case: Read non-existent user
 
@@ -368,6 +366,8 @@ def test_read_not_existing_user_returns_404(client, test_db):
     response = client.get('/api/users/101/')
     assert response.status_code == 404
 ```
+
+To interact with Django application, we use the [`client` fixture, provided by pytest-django](https://pytest-django.readthedocs.io/en/latest/helpers.html#client-django-test-client).
 
 #### Test Case: Get users returns empty list on empty database
 
