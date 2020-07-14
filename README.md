@@ -2,7 +2,7 @@
 
 REST API with Django and Django REST Framework
 
-Based on: https://rapidapi.com/blog/python-django-rest-api-tutorial/
+
 
 # Run the project
 
@@ -18,7 +18,7 @@ $ python manage.py migrate
 $ python manage.py runserver
 ```
 
-
+Open your browser and navigate to http://localhost:8000/api/.
 
 # Create the project (Notes)
 
