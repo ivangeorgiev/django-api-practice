@@ -1,7 +1,26 @@
 # django-api-practice
+
 REST API with Django and Django REST Framework
 
 Based on: https://rapidapi.com/blog/python-django-rest-api-tutorial/
+
+# Run the project
+
+```bash
+$ py -3.7 -m venv .venv
+$ source .venv/Scripts/activate
+$ python -m pip install --upgrade pip
+
+$ pip install -r requirements.txt
+$ python manage.py makemigrations
+$ python manage.py migrate
+
+$ python manage.py runserver
+```
+
+
+
+# Create the project (Notes)
 
 ## Setup Django project
 
@@ -10,7 +29,7 @@ $ mkdir rapid-api-practice
 $ cd rapid-api-practice
 
 # Create and activate virtual environment
-$ python -3.7 -m venv .venv
+$ py -3.7 -m venv .venv
 $ source .venv/Scripts/activate
 $ python -m pip install --upgrade pip
 
@@ -146,6 +165,21 @@ $ python manage.py runserver
 ## Testing
 
 ```bash
-$ pip install pytest pytest-django
+$ pip install pytest pytest-django pytest-cov
 ```
 
+
+
+# References
+
+## Django General
+
+* [Top 10 Django Mistakes](https://www.toptal.com/django/django-top-10-mistakes)
+* [Advanced Tutorial: How to write reusable apps](https://docs.djangoproject.com/en/3.0/intro/reusable-apps/) (Django)
+* [How to Build an API in Python (with Django)](https://rapidapi.com/blog/python-django-rest-api-tutorial/)
+
+## Unit Testing
+
+* [pytest-django](https://pytest-django.readthedocs.io/en/latest/)
+* [Testing in Django](https://docs.djangoproject.com/en/3.0/topics/testing/) (Django)
+* [Testing Your Django App With Pytest](https://djangostars.com/blog/django-pytest-testing/)
